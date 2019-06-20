@@ -17,7 +17,7 @@ const instructions = Platform.select({
     'Shake or press menu button for dev menu',
 });
 
-const Child = React.memo(({ name, content }) => {
+const Child = React.memo(({ name, children }) => {
   console.log('child rerender');
   changeName = (name) => {
     console.log('Child');
@@ -29,7 +29,7 @@ const Child = React.memo(({ name, content }) => {
   return (
     <View style={{ flex:1, justifyContent: 'flex-start' }}>
       <Text>{changedName}</Text>
-      <Text>{content}</Text>
+      <Text>{children}</Text>
     </View>
   );
 })
