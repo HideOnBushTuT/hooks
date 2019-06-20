@@ -35,51 +35,51 @@ const Child = React.memo(({ name, children }) => {
 })
 
 
-// const App = () => {
-//   const [name, setName] = useState('name');
-//   const [content, setContent] = useState('content');
+const App = () => {
+  const [name, setName] = useState('name');
+  const [content, setContent] = useState('content');
   
-//   return (
-//     <View style={styles.container}>
-//       <Text style={{ marginTop: 100 }} onPress={() => setName(new Date().getTime())}>{name}</Text>
-//       <Text onPress={() => setContent('qwer')}>{content}</Text>
-//       <Child name={name}>{content}</Child>
-//     </View>
-//   );
-// }
-
-class App extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      name: 'name',
-      content: 'content',
-    }
-
-    this.handleNameClick = this.handleNameClick.bind(this)
-    this.handleContentClick = this.handleContentClick.bind(this)
-  }
-
-  handleNameClick() {
-    this.setState({ name: new Date().getTime() })
-  }
-
-  handleContentClick() {
-    this.setState({ content: new Date().getTime() })
-  }
-
-  render() {
-    const { name, content } = this.state
-    return (
-      <View style={styles.container}>
-        <Text style={{ marginTop: 200 }} onPress={this.handleNameClick}>{name}</Text>
-        <Text onPress={this.handleContentClick} >{content}</Text>
-        <Child name={name} >{content}</Child>
-      </View>
-    );
-  }
-
+  return (
+    <View style={styles.container}>
+      <Text style={{ marginTop: 100 }} onPress={() => setName(new Date().getTime())}>{name}</Text>
+      <Text onPress={() => setContent('qwer')}>{content}</Text>
+      <Child name={name}>{content}</Child>
+    </View>
+  );
 }
+
+// class App extends React.Component {
+//   constructor(props) {
+//     super(props);
+//     this.state = {
+//       name: 'name',
+//       content: 'content',
+//     }
+
+//     this.handleNameClick = this.handleNameClick.bind(this)
+//     this.handleContentClick = this.handleContentClick.bind(this)
+//   }
+
+//   handleNameClick() {
+//     this.setState({ name: new Date().getTime() })
+//   }
+
+//   handleContentClick() {
+//     this.setState({ content: new Date().getTime() })
+//   }
+
+//   render() {
+//     const { name, content } = this.state
+//     return (
+//       <View style={styles.container}>
+//         <Text style={{ marginTop: 200 }} onPress={this.handleNameClick}>{name}</Text>
+//         <Text onPress={this.handleContentClick} >{content}</Text>
+//         <Child name={name} >{content}</Child>
+//       </View>
+//     );
+//   }
+
+// }
 
 const styles = StyleSheet.create({
   container: {
