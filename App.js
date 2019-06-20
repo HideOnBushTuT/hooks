@@ -8,7 +8,6 @@
 
 import React, {Component, useState, useEffect, useMemo } from 'react';
 import {Platform, StyleSheet, Text, View} from 'react-native';
-import { exportDefaultDeclaration } from '@babel/types';
 
 const instructions = Platform.select({
   ios: 'Press Cmd+R to reload,\n' + 'Cmd+D or shake for dev menu',
@@ -17,36 +16,44 @@ const instructions = Platform.select({
     'Shake or press menu button for dev menu',
 });
 
-const Child = React.memo(({ name, children }) => {
-  console.log('child rerender');
-  changeName = (name) => {
-    console.log('Child');
-    return name + ' is changed'
-  }
+// const Child = React.memo(({ name, children }) => {
+//   console.log('child rerender');
+//   changeName = (name) => {
+//     console.log('Child');
+//     return name + ' is changed'
+//   }
 
-  const changedName = useMemo(() => changeName(name), [name])
+//   const changedName = useMemo(() => changeName(name), [name])
 
-  return (
-    <View style={{ flex:1, justifyContent: 'flex-start' }}>
-      <Text>{changedName}</Text>
-      <Text>{children}</Text>
-    </View>
-  );
-})
-
-
-// const App = () => {
-//   const [name, setName] = useState('name');
-//   const [content, setContent] = useState('content');
-  
 //   return (
-//     <View style={styles.container}>
-//       <Text style={{ marginTop: 100 }} onPress={() => setName(new Date().getTime())}>{name}</Text>
-//       <Text onPress={() => setContent('qwer')}>{content}</Text>
-//       <Child name={name}>{content}</Child>
+//     <View style={{ flex:1, justifyContent: 'flex-start' }}>
+//       <Text>{changedName}</Text>
+//       <Text>{children}</Text>
 //     </View>
 //   );
-// }
+// })
+
+class Child extends React.Component {
+  constructor(props) {
+    super(props);
+  }
+
+  shouldComponentUpdate(nextProps, nextState) {
+    return nextProps.name !== this.props.name || nextProps.children !== this.props.children
+    // return true
+  }
+
+  render() {
+    const { name, children } = this.props
+    console.log('child rendering')
+    return (
+      <View style={{ flex: 1, justifyContent: 'flex-start' }}>
+        <Text>{name}</Text>
+        <Text>{children}</Text>
+      </View>
+    );
+  }
+}
 
 class App extends React.Component {
   constructor(props) {
@@ -61,7 +68,7 @@ class App extends React.Component {
   }
 
   handleNameClick() {
-    this.setState({ name: new Date().getTime() })
+    this.setState({ name: 'new Date().getTime()' })
   }
 
   handleContentClick() {
