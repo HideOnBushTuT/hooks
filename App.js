@@ -7,8 +7,9 @@
  */
 
 import React, {Component, useState, useEffect, useMemo } from 'react';
-import {Platform, StyleSheet, Text, View} from 'react-native';
+import {Platform, StyleSheet, Text, View, TextInput } from 'react-native';
 import { exportDefaultDeclaration } from '@babel/types';
+import axios from 'axios';
 
 const instructions = Platform.select({
   ios: 'Press Cmd+R to reload,\n' + 'Cmd+D or shake for dev menu',
@@ -38,12 +39,39 @@ const Child = React.memo(({ name, children }) => {
 const App = () => {
   const [name, setName] = useState('name');
   const [content, setContent] = useState('content');
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const result = await axios.get (
+        `https://api.github.com/search/users?q=${name}`
+      )
+      console.log(result);
+      setContent(result.data.items[0].html_url)
+    }
+
+    fetchData()
+  }, [name])
   
   return (
     <View style={styles.container}>
+      <View style={{ width: 300, height: 100, flexDirection: 'row' }}>
+        <TextInput
+          style={{ width: 200, height: 40, borderWidth: 3, borderColor: 'orange', marginTop: 100 }}
+          placeholder={'input the name you want to search'}
+          onChangeText={(text) => setContent(text)}
+        />
+        <Text
+         style={{ color: 'black', backgroundColor: 'orange', marginTop: 100, width: 60, height: 40, textAlign: 'center', }} 
+         onPress={() => setName(content)}
+        >
+          search
+        </Text>
+      </View>
       <Text style={{ marginTop: 100 }} onPress={() => setName(new Date().getTime())}>{name}</Text>
       <Text onPress={() => setContent('qwer')}>{content}</Text>
       <Child name={name}>{content}</Child>
+
+      
     </View>
   );
 }
