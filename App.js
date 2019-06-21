@@ -7,7 +7,7 @@
  */
 
 import React, {Component, useState, useEffect, useMemo } from 'react';
-import {Platform, StyleSheet, Text, View, TextInput } from 'react-native';
+import {Platform, StyleSheet, Text, View, TextInput, Image } from 'react-native';
 import { exportDefaultDeclaration } from '@babel/types';
 import axios from 'axios';
 
@@ -39,6 +39,7 @@ const Child = React.memo(({ name, children }) => {
 const App = () => {
   const [name, setName] = useState('name');
   const [content, setContent] = useState('content');
+  const [imageUri, setImageUri] = useState('');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -47,6 +48,7 @@ const App = () => {
       )
       console.log(result);
       setContent(result.data.items[0].html_url)
+      setImageUri(result.data.items[0].avatar_url)
     }
 
     fetchData()
@@ -67,10 +69,10 @@ const App = () => {
           search
         </Text>
       </View>
+      <Image style={{ width: 100, height: 100, borderWidth: 1, borderColor: 'gray', marginTop: 59 }} source={{ uri: imageUri }}/>
       <Text style={{ marginTop: 100 }} onPress={() => setName(new Date().getTime())}>{name}</Text>
       <Text onPress={() => setContent('qwer')}>{content}</Text>
       <Child name={name}>{content}</Child>
-
       
     </View>
   );
