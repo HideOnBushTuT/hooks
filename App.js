@@ -37,10 +37,10 @@ const Child = React.memo(({ name, content }) => {
 
 })
 
-const FetchDataExample = () => {
-  const [data, setData] = useState({ items: [] })
-  const [content, setContent] = useState('cbreno')
-  const [url, setUrl] = useState(`https://api.github.com/search/users?q=cbreno`)
+const useGitHubApi = (initialUrl, initialData) => {
+  const [data, setData] = useState(initialData)
+  
+  const [url, setUrl] = useState(initialUrl)
   const [isLoading, setIsLoading] = useState(false)
   const [isError, setIsError] = useState(false)
 
@@ -62,6 +62,17 @@ const FetchDataExample = () => {
     fetchData()
   }, [url])
 
+  return [{ data, isLoading, isError}, setUrl]
+}
+
+const FetchDataExample = () => {
+  const [content, setContent] = useState('cbreno')
+  const [{ data, isLoading, isError }, doFetch] = useGitHubApi(
+    'https://api.github.com/search/users?q=cbreno',
+    { items: [] }
+  )
+
+
   return (
     <View style={{ flex: 1, backgroundColor: 'orange', width: 300, justifyContent: 'flex-start', paddingTop: 64 }}>
       <View style={{ width: 300, height: 40, flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'center' }}>
@@ -70,7 +81,7 @@ const FetchDataExample = () => {
           placeholder={'type the name you wanna search'}
           onChangeText={(text) => setContent(text)}
         />
-        <Text onPress={() => setUrl(`https://api.github.com/search/users?q=${content}`)} style={{ marginRight: 20 }}>
+        <Text onPress={() => doFetch(`https://api.github.com/search/users?q=${content}`)} style={{ marginRight: 20 }}>
           Search
        </Text>
       </View>
