@@ -6,7 +6,7 @@
  * @flow
  */
 
-import React, { Component, useState, useEffect, useMemo, useReducer } from 'react';
+import React, { Component, useState, useEffect, useMemo } from 'react';
 import { Platform, StyleSheet, Text, View, Image, TextInput, Button, ScrollView } from 'react-native';
 import Axios from 'axios';
 // import axios from 'axios';
@@ -37,69 +37,32 @@ const Child = React.memo(({ name, content }) => {
 
 })
 
-const dataFetchReducer = (state, action) => {
-  switch (action.type) {
-    case 'FETCH_INIT': 
-      return { 
-        ...state,
-        isLoading: true,
-        isError: false
-      }
-    case 'FETCH_SUCCESS': 
-      return {
-        ...state,
-        isLoading: false,
-        isError: false,
-        data: action.payload,
-      }
-    case 'FETCH_FAILURE':
-        return {
-          ...state,
-          isLoading: false,
-          isError: true,
-        }
-      default: 
-        return state
-  }
-
-}
-
 const useGitHubApi = (initialUrl, initialData) => {
-  const [url, setUrl] = useState(initialUrl)
-  // const [data, setData] = useState(initialData)
+  const [data, setData] = useState(initialData)
   
-  // const [url, setUrl] = useState(initialUrl)
-  // const [isLoading, setIsLoading] = useState(false)
-  // const [isError, setIsError] = useState(false)
-  const [state, dispatch] = useReducer(dataFetchReducer, {
-    isLoading: false,
-    isError: false,
-    data: initialData,
-  })
+  const [url, setUrl] = useState(initialUrl)
+  const [isLoading, setIsLoading] = useState(false)
+  const [isError, setIsError] = useState(false)
 
   useEffect(() => {
     const fetchData = async () => {
-      // setIsLoading(true)
-      // setIsError(false)
-      dispatch({ type: 'FETCH_INIT' })
-
+      setIsLoading(true)
+      setIsError(false)
       try {
         const result = await Axios.get(url)
         console.log('result:', result.data)
-        // setData(result.data)
-        dispatch({ type: 'FETCH_SUCCESS', payload: result.data })
+        setData(result.data)
       } catch (error) {
-        // setIsError(true)
-        dispatch({ type: 'FETCH_FAILURE' })
+        setIsError(true)
       }
 
-      // setIsLoading(false)
+      setIsLoading(false)
     }
 
     fetchData()
   }, [url])
 
-  return [state, setUrl]
+  return [{ data, isLoading, isError}, setUrl]
 }
 
 const FetchDataExample = () => {
