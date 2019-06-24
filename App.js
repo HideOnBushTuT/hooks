@@ -42,13 +42,20 @@ const FetchDataExample = () => {
   const [content, setContent] = useState('cbreno')
   const [url, setUrl] = useState(`https://api.github.com/search/users?q=cbreno`)
   const [isLoading, setIsLoading] = useState(false)
+  const [isError, setIsError] = useState(false)
 
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true)
-      const result = await Axios.get(url)
-      console.log('result:', result.data)
-      setData(result.data)
+      setIsError(false)
+      try {
+        const result = await Axios.get(url)
+        console.log('result:', result.data)
+        setData(result.data)
+      } catch (error) {
+        setIsError(true)
+      }
+
       setIsLoading(false)
     }
 
@@ -69,6 +76,7 @@ const FetchDataExample = () => {
       </View>
       <ScrollView>
         <View style={{ justifyContent: 'center', alignItem: 'center' }}>
+          { isError && <Text>Something went wrong</Text> }
           {
           isLoading ? <Text>loading</Text> :
           data.items.map(item => (
