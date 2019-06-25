@@ -6,10 +6,11 @@
  * @flow
  */
 
-import React, {Component, useState, useEffect, useMemo } from 'react';
-import {Platform, StyleSheet, Text, View, TextInput, Image } from 'react-native';
-import { exportDefaultDeclaration } from '@babel/types';
-import axios from 'axios';
+import React, { Component, useState, useEffect, useMemo, useReducer } from 'react';
+import { Platform, StyleSheet, Text, View, Image, TextInput, Button, ScrollView } from 'react-native';
+import Axios from 'axios';
+// import axios from 'axios';
+
 
 const instructions = Platform.select({
   ios: 'Press Cmd+R to reload,\n' + 'Cmd+D or shake for dev menu',
@@ -18,7 +19,7 @@ const instructions = Platform.select({
     'Shake or press menu button for dev menu',
 });
 
-const Child = React.memo(({ name, children }) => {
+const Child = React.memo(({ name, content }) => {
   console.log('child rerender');
   changeName = (name) => {
     console.log('Child');
@@ -28,88 +29,131 @@ const Child = React.memo(({ name, children }) => {
   const changedName = useMemo(() => changeName(name), [name])
 
   return (
-    <View style={{ flex:1, justifyContent: 'flex-start' }}>
+    <View style={{ flex: 1, justifyContent: 'flex-start' }}>
       <Text>{changedName}</Text>
-      <Text>{children}</Text>
+      <Text>{content}</Text>
     </View>
   );
+
 })
+
+const dataFetchReducer = (state, action) => {
+  switch (action.type) {
+    case 'FETCH_INIT': 
+      return { 
+        ...state,
+        isLoading: true,
+        isError: false
+      }
+    case 'FETCH_SUCCESS': 
+      return {
+        ...state,
+        isLoading: false,
+        isError: false,
+        data: action.payload,
+      }
+    case 'FETCH_FAILURE':
+        return {
+          ...state,
+          isLoading: false,
+          isError: true,
+        }
+      default: 
+        return state
+  }
+
+}
+
+const useGitHubApi = (initialUrl, initialData) => {
+  const [url, setUrl] = useState(initialUrl)
+  // const [data, setData] = useState(initialData)
+  
+  // const [url, setUrl] = useState(initialUrl)
+  // const [isLoading, setIsLoading] = useState(false)
+  // const [isError, setIsError] = useState(false)
+  const [state, dispatch] = useReducer(dataFetchReducer, {
+    isLoading: false,
+    isError: false,
+    data: initialData,
+  })
+
+  useEffect(() => {
+    const fetchData = async () => {
+      // setIsLoading(true)
+      // setIsError(false)
+      dispatch({ type: 'FETCH_INIT' })
+
+      try {
+        const result = await Axios.get(url)
+        console.log('result:', result.data)
+        // setData(result.data)
+        dispatch({ type: 'FETCH_SUCCESS', payload: result.data })
+      } catch (error) {
+        // setIsError(true)
+        dispatch({ type: 'FETCH_FAILURE' })
+      }
+
+      // setIsLoading(false)
+    }
+
+    fetchData()
+  }, [url])
+
+  return [state, setUrl]
+}
+
+const FetchDataExample = () => {
+  const [content, setContent] = useState('cbreno')
+  const [{ data, isLoading, isError }, doFetch] = useGitHubApi(
+    'https://api.github.com/search/users?q=cbreno',
+    { items: [] }
+  )
+
+
+  return (
+    <View style={{ flex: 1, backgroundColor: 'orange', width: 300, justifyContent: 'flex-start', paddingTop: 64 }}>
+      <View style={{ width: 300, height: 40, flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'center' }}>
+        <TextInput
+          style={{ width: 200 }}
+          placeholder={'type the name you wanna search'}
+          onChangeText={(text) => setContent(text)}
+        />
+        <Text onPress={() => doFetch(`https://api.github.com/search/users?q=${content}`)} style={{ marginRight: 20 }}>
+          Search
+       </Text>
+      </View>
+      <ScrollView>
+        <View style={{ justifyContent: 'center', alignItem: 'center' }}>
+          { isError && <Text>Something went wrong</Text> }
+          {
+          isLoading ? <Text>loading</Text> :
+          data.items.map(item => (
+            <View key={item.id} style={{ width: 300, marginBottom: 10, justifyContent: 'center', alignItems: 'center' }}  >
+              <Text>{item.login}</Text>
+              <Image style={{ width: 200, height: 200 }} source={{ uri: item.avatar_url }}/>
+            </View>
+          ))
+        }
+        </View>
+      </ScrollView>
+    </View>
+  )
+}
 
 
 const App = () => {
   const [name, setName] = useState('name');
   const [content, setContent] = useState('content');
-  const [imageUri, setImageUri] = useState('');
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const result = await axios.get (
-        `https://api.github.com/search/users?q=${name}`
-      )
-      console.log(result);
-      setContent(result.data.items[0].html_url)
-      setImageUri(result.data.items[0].avatar_url)
-    }
-
-    fetchData()
-  }, [name])
-  
   return (
     <View style={styles.container}>
-      <View style={{ width: 300, height: 100, flexDirection: 'row' }}>
-        <TextInput
-          style={{ width: 200, height: 40, borderWidth: 3, borderColor: 'orange', marginTop: 100 }}
-          placeholder={'input the name you want to search'}
-          onChangeText={(text) => setContent(text)}
-        />
-        <Text
-         style={{ color: 'black', backgroundColor: 'orange', marginTop: 100, width: 60, height: 40, textAlign: 'center', }} 
-         onPress={() => setName(content)}
-        >
-          search
-        </Text>
-      </View>
-      <Image style={{ width: 100, height: 100, borderWidth: 1, borderColor: 'gray', marginTop: 59 }} source={{ uri: imageUri }}/>
-      <Text style={{ marginTop: 100 }} onPress={() => setName(new Date().getTime())}>{name}</Text>
+      {/* <Text style={{ marginTop: 100 }} onPress={() => setName(new Date().getTime())}>{name}</Text>
       <Text onPress={() => setContent('qwer')}>{content}</Text>
-      <Child name={name}>{content}</Child>
-      
+      <Child name={name}>{content}</Child> */}
+      <FetchDataExample />
     </View>
   );
 }
-
-// class App extends React.Component {
-//   constructor(props) {
-//     super(props);
-//     this.state = {
-//       name: 'name',
-//       content: 'content',
-//     }
-
-//     this.handleNameClick = this.handleNameClick.bind(this)
-//     this.handleContentClick = this.handleContentClick.bind(this)
-//   }
-
-//   handleNameClick() {
-//     this.setState({ name: new Date().getTime() })
-//   }
-
-//   handleContentClick() {
-//     this.setState({ content: new Date().getTime() })
-//   }
-
-//   render() {
-//     const { name, content } = this.state
-//     return (
-//       <View style={styles.container}>
-//         <Text style={{ marginTop: 200 }} onPress={this.handleNameClick}>{name}</Text>
-//         <Text onPress={this.handleContentClick} >{content}</Text>
-//         <Child name={name} >{content}</Child>
-//       </View>
-//     );
-//   }
-
-// }
 
 const styles = StyleSheet.create({
   container: {
