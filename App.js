@@ -128,8 +128,9 @@ const FetchDataExample = () => {
           {
           isLoading ? <Text>loading</Text> :
           data.items.map(item => (
-            <View key={item.id} style={{ width: 300, height: 40, backgroundColor: 'green', marginBottom: 10, flexDirection: 'row', justifyContent: 'center', alignItem: 'center' }}  >
+            <View key={item.id} style={{ width: 300, marginBottom: 10, justifyContent: 'center', alignItems: 'center' }}  >
               <Text>{item.login}</Text>
+              <Image style={{ width: 200, height: 200 }} source={{ uri: item.avatar_url }}/>
             </View>
           ))
         }
