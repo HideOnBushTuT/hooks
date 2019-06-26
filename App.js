@@ -6,39 +6,67 @@
  * @flow
  */
 
-import React, { Component, useState, useEffect } from 'react';
-import { Platform, StyleSheet, Text, View, ScrollView, Image } from 'react-native';
+import React, { Component, useState, useEffect, useReducer } from 'react';
+import { Platform, StyleSheet, Text, View, ScrollView, Image, TextInput } from 'react-native';
 import Axios from 'axios';
 
-const App = () => {
-  const [content, setContent] = useState('useState')
-  const [data, setData] = useState({ items: [] })
+
+const useFetchData = (initialData, initialUrl) => {
+  const [data, setData] = useState(initialData)
+  const [isLoading, setIsLoading] = useState(false)
+  const [isError, setIsError] = useState(false)
+  const [url, setUrl] = useState(initialUrl)
 
   useEffect(() => {
     const fetchGitHubData = async () => {
-      const res = await Axios.get('https://api.github.com/search/users?q=cbreno')
-      console.log('data:', res)
-      setData(res.data)
+      try {
+        setIsLoading(true)
+        const res = await Axios.get(url)
+        console.log('data:', res)
+        setData(res.data)
+        setIsLoading(false)
+        setIsError(false)
+      } catch (error) {
+        setIsError(true)
+        setIsLoading(false)
+      }
     }
     fetchGitHubData()
 
     return () => {
-      
+
     }
-  }, [])
+  }, [url])
+
+  return [data, isLoading, isError, setUrl]
+}
+
+const App = () => {
+  const [data, isLoading, isError, setUrl] = useFetchData({ items: [] }, 'https://api.github.com/search/users?q=cbreno')
+  const  [content, setContent] = useState('')
 
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text onPress={() => setContent(new Date().getTime())}>Search</Text>
-      <Text>{content}</Text>
+      <View style={{ flexDirection: 'row', width: 300, height: 100, justifyContent: 'center', alignItems: 'center', marginTop: 44  }}>
+        <TextInput 
+          placeholder={'input name here'}
+          style={{ width: 200, height: 100 }}
+          onChangeText={(text) => setContent(text)}
+        />
+        <Text onPress={() => setUrl(`https://api.github.com/search/users?q=${content}`)}>Search</Text>
+      </View>
       <ScrollView>
         {
-          data.items.map((item) => (
-            <View key={item.id} style={{ justifyContent: 'center', alignItems: 'center', width: 300, height: 200 }}>
-              <Text>{item.login}</Text>
-              <Image style={{ width: 100, height: 100 }} source={{ uri: item.avatar_url }} />
-            </View>
-          ))
+          isError ? <Text>Errir</Text> : null
+        }
+        {
+          isLoading ? <Text>Loading</Text> :
+            data.items.map((item) => (
+              <View key={item.id} style={{ justifyContent: 'center', alignItems: 'center', width: 300, height: 200 }}>
+                <Text>{item.login}</Text>
+                <Image style={{ width: 100, height: 100 }} source={{ uri: item.avatar_url }} />
+              </View>
+            ))
         }
       </ScrollView>
     </View>
