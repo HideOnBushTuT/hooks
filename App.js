@@ -6,67 +6,87 @@
  * @flow
  */
 
-import React, {Component, useState, useEffect, useMemo } from 'react';
-import {Platform, StyleSheet, Text, View} from 'react-native';
-import { exportDefaultDeclaration } from '@babel/types';
-
-const instructions = Platform.select({
-  ios: 'Press Cmd+R to reload,\n' + 'Cmd+D or shake for dev menu',
-  android:
-    'Double tap R on your keyboard to reload,\n' +
-    'Shake or press menu button for dev menu',
-});
-
-const Child = React.memo(({ name, content }) => {
-  console.log('child rerender');
-  changeName = (name) => {
-    console.log('Child');
-    return name + ' is changed'
-  }
-
-  const changedName = useMemo(() => changeName(name), [name])
-
-  return (
-    <View style={{ flex:1, justifyContent: 'flex-start' }}>
-      <Text>{changedName}</Text>
-      <Text>{content}</Text>
-    </View>
-  );
-
-})
-
+import React, { Component, useState, useEffect } from 'react';
+import { Platform, StyleSheet, Text, View, ScrollView, Image } from 'react-native';
+import Axios from 'axios';
 
 const App = () => {
-  const [name, setName] = useState('name');
-  const [content, setContent] = useState('content');
-  
+  const [content, setContent] = useState('useState')
+  const [data, setData] = useState({ items: [] })
+
+  useEffect(() => {
+    const fetchGitHubData = async () => {
+      const res = await Axios.get('https://api.github.com/search/users?q=cbreno')
+      console.log('data:', res)
+      setData(res.data)
+    }
+    fetchGitHubData()
+
+    return () => {
+      
+    }
+  }, [])
+
   return (
-    <View style={styles.container}>
-      <Text style={{ marginTop: 100 }} onPress={() => setName(new Date().getTime())}>{name}</Text>
-      <Text onPress={() => setContent('qwer')}>{content}</Text>
-      <Child name={name}>{content}</Child>
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <Text onPress={() => setContent(new Date().getTime())}>Search</Text>
+      <Text>{content}</Text>
+      <ScrollView>
+        {
+          data.items.map((item) => (
+            <View key={item.id} style={{ justifyContent: 'center', alignItems: 'center', width: 300, height: 200 }}>
+              <Text>{item.login}</Text>
+              <Image style={{ width: 100, height: 100 }} source={{ uri: item.avatar_url }} />
+            </View>
+          ))
+        }
+      </ScrollView>
     </View>
-  );
+  )
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F5FCFF',
-  },
-  welcome: {
-    fontSize: 20,
-    textAlign: 'center',
-    margin: 10,
-  },
-  instructions: {
-    textAlign: 'center',
-    color: '#333333',
-    marginBottom: 5,
-    fontSize: 45,
-  },
-});
+// class App extends React.Component {
+//   constructor(props) {
+//     super(props)
+//     this.state = {
+//       content: 'use class',
+//       items: [],
+//     }
+
+//     this.handleSearchClick = this.handleSearchClick.bind(this)
+//   }
+
+//   handleSearchClick() {
+//     console.log('handleSearchClick')
+//     this.setState({ content: new Date().getTime() })
+//   }
+
+//   componentWillMount() {
+//     Axios.get('https://api.github.com/search/users?q=mattt')
+//       .then(res => {
+//         console.log('res:', res)
+//         this.setState({ items: res.data.items })
+//       })
+//   }
+
+//   render() {
+//     return (
+//       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+//         <Text onPress={this.handleSearchClick}>Search</Text>
+//         <Text>{this.state.content}</Text>
+//         <ScrollView>
+//           {
+//             this.state.items.map((item) => (
+//               <View key={ item.id } style={{ justifyContent: 'center', alignItems: 'center', width: 300, height: 200 }}>
+//                 <Text>{item.login}</Text>
+//                 <Image style={{ width: 100, height: 100 }} source={{ uri: item.avatar_url }}/>
+//               </View>
+//             ))
+//           }
+//         </ScrollView>
+//       </View>
+//     )
+//   }
+// }
 
 export default App;
