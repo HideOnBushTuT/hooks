@@ -10,25 +10,56 @@ import React, { Component, useState, useEffect, useReducer } from 'react';
 import { Platform, StyleSheet, Text, View, ScrollView, Image, TextInput } from 'react-native';
 import Axios from 'axios';
 
+const reducer = (state, action) => {
+  switch(action.type) {
+    case 'FETCH_INIT': 
+      return {
+        ...state,
+        isLoading: true
+      }
+    case 'FETCH_SUCCESS': 
+      return {
+        ...state,
+        data: action.playload,
+        isLoading: false,
+        isError: false
+      }
+    case 'FETCH_FAILURE':
+        return {
+          ...state,
+          isLoading: false,
+          isError: true
+        }
+    default: 
+        return state
+  }
+}
 
 const useFetchData = (initialData, initialUrl) => {
-  const [data, setData] = useState(initialData)
-  const [isLoading, setIsLoading] = useState(false)
-  const [isError, setIsError] = useState(false)
+  // const [data, setDsetIsLoading(true)ata] = useState(initialData)
+  // const [isLoading, setIsLoading] = useState(false)
+  // const [isError, setIsError] = useState(false)
   const [url, setUrl] = useState(initialUrl)
+  const [state, dispatch] = useReducer(reducer, {
+    data: initialData,
+    isLoading: false,
+    isError: false
+  })
 
   useEffect(() => {
     const fetchGitHubData = async () => {
+      dispatch({ type: 'FETCH_INIT' })
       try {
-        setIsLoading(true)
         const res = await Axios.get(url)
         console.log('data:', res)
-        setData(res.data)
-        setIsLoading(false)
-        setIsError(false)
+        dispatch({ type: 'FETCH_SUCCESS', playload: res.data })
+        // setData(res.data)
+        // setIsLoading(false)
+        // setIsError(false)
       } catch (error) {
-        setIsError(true)
-        setIsLoading(false)
+        // setIsError(true)
+        // setIsLoading(false)
+        dispatch({ type: 'FETCH_FAILURE' })
       }
     }
     fetchGitHubData()
@@ -38,11 +69,11 @@ const useFetchData = (initialData, initialUrl) => {
     }
   }, [url])
 
-  return [data, isLoading, isError, setUrl]
+  return [state, setUrl]
 }
 
 const App = () => {
-  const [data, isLoading, isError, setUrl] = useFetchData({ items: [] }, 'https://api.github.com/search/users?q=cbreno')
+  const [{data, isLoading, isError}, setUrl] = useFetchData({ items: [] }, 'https://api.github.com/search/users?q=cbreno')
   const  [content, setContent] = useState('')
 
   return (
